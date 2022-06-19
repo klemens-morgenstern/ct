@@ -1,0 +1,1 @@
+add_library(tests source_location.cpp string.cpp )

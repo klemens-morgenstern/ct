@@ -1,0 +1,60 @@
+`boost.ct`
+==========
+
+Boost compile-time is a small library to provide easy usage of some C++20 non-type template parameter utilities.
+
+`ct::string`
+------------
+
+The string class can be used to pass strings of artificial size and char-type to templates:
+
+[source,cpp]
+----
+template<ct::string Str>
+struct tag
+{
+    constexpr static boost::string_view id = Str.view();
+};
+
+tag<"foo"> tag1;
+tag<"bar"> tag2;
+
+----
+
+This can be useful when asserting compile-time constant strings (e.g. for formatting) and
+can also be used to create artificial types inline.
+
+`ct::source_location`
+---------------------
+
+The `source_location` is a compile-time impementation of `std::source_location` that can be passed into templates:
+
+[source,cpp]
+----
+template<ct::source_location Src>
+struct located_thingy
+{
+    constexpr static boost::string_view file_name = ct::file_name<Str>;
+};
+----
+
+This can be combined with a string (or array), which is very much useful for logging:
+
+[source,cpp]
+----
+template<boost::ct::located_string Str,
+         typename ... Args>
+auto log(Args && ... args)
+{
+    constexpr auto fn = boost::ct::file_name<Str.location>;
+    // actual format string, prepend location
+    constexpr auto fmt = "%s(%d): " + Str + "\n";
+
+    std::printf(fmt.c_str(), fn.c_str(), Str.location.line(), std::forward<Args>(args)...);
+}
+
+// ...
+
+
+log<"My format %d">(42);
+----
